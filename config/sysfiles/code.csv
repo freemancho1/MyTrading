@@ -1,0 +1,12 @@
+c_type,code,name,memo
+0,0,Code Type,
+0,A,Market Type,
+0,B,Trading Type,
+0,E,Error Message,
+0,S,System Message,
+A,A001,KOSPI,
+A,A002,KOSDAQ,
+A,A003,KONEX,
+B,B001,CloseToClose,The forecasted closing price for the next day versus today's closing price
+B,B002,CloseToOpen,Comparing forecasted closing price for next day and opening price
+

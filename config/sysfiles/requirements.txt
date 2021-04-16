@@ -1,0 +1,14 @@
+django
+mysqlclient
+tensorflow
+scikit-learn
+pandas
+odspy
+beautifulsoup4
+selenium
+tqdm
+jupyter
+jupyterlab
+django-pandas
+matplotlib
+seaborn
