@@ -13,3 +13,8 @@ class CodeWrapper:
         Code.objects.all().delete()
 
         code_df = pd.read_csv(CODE_FILE_PATH, delimiter=',', encoding='utf-8')
+        code_df = code_df.fillna('')
+
+        for _, code in code_df.iterrows():
+            code_object = Code(**code)
+            code_object.save()

@@ -62,7 +62,7 @@ class Logger:
                 trace_msg = ''
             Logger.__file_checker()
             with open(LOG_FILE_PATH, 'a') as logfile:
-                logfile.write(f'{datetime.now():%Y-%m-%d %H:%M:%S.%s} '
+                logfile.write(f'{datetime.now():%Y-%m-%d %H:%M:%S} '
                               f'[{label.upper():>8}] {trace_msg}'
                               f'{msg}\n')
 
