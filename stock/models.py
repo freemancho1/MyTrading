@@ -11,15 +11,17 @@ class Code(models.Model):
     class Meta:
         ordering = ['c_type', 'code']
 
-    def __init__(self, c_type, code, name, memo=None, *args, **kwargs):
+    def __init__(self, id, c_type, code, name, memo=None,
+                 *args, **kwargs):
         super(Code, self).__init__(*args, **kwargs)
+        self.id     = id
         self.c_type = c_type
         self.code   = code
         self.name   = name
         self.memo   = memo
 
     def __str__(self):
-        return f'Code(id={self.id}, type={self.c_type}, code={self.code}, name={self.name})'
+        return f'Code(id={self.id}, c_type={self.c_type}, code={self.code}, name={self.name})'
 
 
 class Company(models.Model):
@@ -27,7 +29,7 @@ class Company(models.Model):
     com_code    = models.CharField('Company Code', max_length=7, null=False, db_index=True)
     com_name    = models.CharField('Company Name', max_length=500, null=False)
     m_type      = models.CharField('Market Type', max_length=4, null=False)
-    chg_date    = models.DateField('Change Date', null=False)
+    chg_date    = models.DateField('Change Date', null=False, auto_now=True)
     t_volume    = models.FloatField('Number of Listed Stocks', null=False)
     data_size   = models.IntegerField('Data Size', null=True)
 
@@ -35,15 +37,14 @@ class Company(models.Model):
         ordering = ['com_code']
 
     def __init__(self,
-                 com_code, com_name, m_type,
-                 chg_date, t_volume, data_size=0.,
-                 *args, **kwargs):
+                 id, com_code, com_name, m_type,
+                 t_volume, data_size=0., *args, **kwargs):
         super(Company, self).__init__(*args, **kwargs)
 
+        self.id         = id
         self.com_code   = com_code
         self.com_name   = com_name
         self.m_type     = m_type
-        self.chg_date   = chg_date
         self.t_volume   = t_volume
         self.data_size  = data_size
 
@@ -74,12 +75,12 @@ class MarketData(models.Model):
         ordering = ['-date', 'com_code']
 
     def __init__(self,
-                 date, com_code, com_name, m_type,
+                 id, date, com_code, com_name, m_type,
                  open, low, high, close, diff, ratio,
-                 volume, value, t_volume, t_value,
-                 *args, **kwargs):
+                 volume, value, t_volume, t_value, *args, **kwargs):
         super(MarketData, self).__init__(*args, **kwargs)
 
+        self.id         = id
         self.date       = date
         self.com_code   = com_code
         self.com_name   = com_name
@@ -114,10 +115,11 @@ class ModelingData(models.Model):
         ordering = ['-date']
 
     def __init__(self,
-                 date, company, open, low, high, close, volume,
+                 id, date, company, open, low, high, close, volume,
                  *args, **kwargs):
         super(ModelingData, self).__init__(*args, **kwargs)
 
+        self.id         = id
         self.date       = date
         self.company    = company
         self.open       = open
@@ -149,12 +151,13 @@ class ModelingInfo(models.Model):
         ordering = ['-date']
 
     def __init__(self,
-                 date, company,
+                 id, date, company,
                  r_open=None, r_close=None, p_open=None, p_close=None,
                  o_ratio=None, c_ratio=None, p_ratio=None, t_accuracy=None,
                  *args, **kwargs):
         super(ModelingInfo, self).__init__(*args, **kwargs)
 
+        self.id         = id
         self.date       = date
         self.company    = company
         self.r_open     = r_open
@@ -187,12 +190,13 @@ class MyTrading(models.Model):
         ordering = ['-date', 't_type', 't_count']
 
     def __init__(self,
-                 date, t_type, t_count, company,
+                 id, date, t_type, t_count, company,
                  buy_price=0, sell_price=0, ratio=.0,
                  volume=0, profit=.0,
                  *args, **kwargs):
         super(MyTrading, self).__init__(*args, **kwargs)
 
+        self.id         = id
         self.date       = date
         self.t_type     = t_type
         self.t_count    = t_count
@@ -222,10 +226,11 @@ class Account(models.Model):
         ordering = ['t_type', 't_count']
 
     def __init__(self,
-                 t_type, t_count, base_money, balance, ratio,
+                 id, t_type, t_count, base_money, balance, ratio,
                  *args, **kwargs):
         super(Account, self).__init__(*args, **kwargs)
 
+        self.id         = id
         self.t_type     = t_type
         self.t_count    = t_count
         self.base_money = base_money

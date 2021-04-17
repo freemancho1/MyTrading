@@ -15,10 +15,12 @@ class DataConverter:
         chg_data = data
         if 'DataFrame' in data_type:
             chg_data = data.to_dict('records')[0]
+        elif 'Series' in data_type:
+            chg_data = data.to_dict()
         elif 'models' in data_type:
             chg_data = data.__dict__
         else:
-            Logger.info(f'Unsupported data type: type({data_type}) - data({chg_data})')
+            Logger.info(f'Unsupported data type: type({data_type})')
         return chg_data
 
 
@@ -38,15 +40,18 @@ class StartEndLogging(object):
 
     def __init__(self):
         self._start = datetime.now()
-        self._call_func = re.findall('.*/([\w_\-\.]+).*\ (.*)',
+        self._call_func = re.findall('.*/([\w_\-\.]+).* (.*)',
                                      traceback.format_stack()[-3])
-        Logger.debug(f'{self._call_func[0][0]} {self._call_func[0][1]} '
-                     f'started - {self._start}', is_trace=False)
+        try:
+            self._func_msg = f'{self._call_func[0][0]} {self._call_func[0][1]} '
+        except:
+            self._func_msg = ' '
+        Logger.info(f'{self._func_msg} started - {self._start}', is_trace=False)
 
     def end(self):
         end_dt = datetime.now()
-        Logger.debug(f'{self._call_func[0][0]} {self._call_func[0][1]} ended - {end_dt}, '
-                     f'total processing time: {end_dt - self._start}', is_trace=False)
+        Logger.info(f'{self._func_msg} ended - {end_dt}, '
+                    f'total processing time: {end_dt - self._start}', is_trace=False)
 
 
 class Logger:
@@ -55,9 +60,12 @@ class Logger:
     def __log_writer(label, msg, is_trace=True):
         if IS_WRITE(label):
             if is_trace:
-                call_trace = re.findall('.*/([\w_\-\.]+).*\ (.*)',
+                call_trace = re.findall('.*/([\w_\-\.]+).* (.*)',
                                         traceback.format_stack()[-3])
-                trace_msg = f'{call_trace[0][0]} {call_trace[0][1]} - '
+                try:
+                    trace_msg = f'{call_trace[0][0]} {call_trace[0][1]} - '
+                except:
+                    trace_msg = ''
             else:
                 trace_msg = ''
             Logger.__file_checker()
