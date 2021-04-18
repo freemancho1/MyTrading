@@ -1,5 +1,6 @@
 import os
 import sys
+import copy
 import pandas as pd
 
 from django.db.models import Max, Min
@@ -122,6 +123,11 @@ class CompanyWrapper:
             sys.exit()
 
 
+    @staticmethod
+    def delete_all():
+        Company.objects.all().delete()
+
+
 class MarketDataWrapper:
 
     @staticmethod
@@ -203,4 +209,42 @@ class MarketDataWrapper:
         MarketData.objects.all().delete()
 
 
+class ModelingDataWrapper:
 
+    @staticmethod
+    def get_datas(company_id=None, date=None, period=None):
+        if company_id is None and date is None and period is None:
+            data_qs = ModelingData.objects.all()
+        else:
+            data_qs = ModelingData.objects
+            if company_id:
+                data_qs = data_qs.filter(company_id=company_id)
+            if date:
+                data_qs = data_qs.filter(date=date)
+            elif period:
+                data_qs = data_qs.filter(date__gte=period['start'], date__lte=period['end'])
+        data_qs = data_qs.order_by('date')
+        return data_qs
+
+
+    @staticmethod
+    def make_objects(datas, company):
+        data_dt = dc.other_to_dict(copy.deepcopy(datas[['date'] + MODELING_COLUMNS]))
+        print(f'=========\n{data_dt}')
+        data_dt[:]['id'] = None
+        data_dt['company'] = company
+        return data_dt
+
+
+    @staticmethod
+    def insert(datas):
+        modeling_objects = []
+        for data in datas:
+            print(f'data type: {type(data)} - {data}')
+            modeling_objects.append(ModelingData(**data))
+        ModelingData.objects.bulk_create(modeling_objects)
+
+
+    @staticmethod
+    def delete_all():
+        ModelingInfo.objects.all().delete()

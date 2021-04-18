@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 
 
@@ -38,20 +39,21 @@ class Company(models.Model):
 
     def __init__(self,
                  id, com_code, com_name, m_type,
-                 t_volume, data_size=0., *args, **kwargs):
+                 chg_date=datetime.now().date(), t_volume=0., data_size=0,
+                 *args, **kwargs):
         super(Company, self).__init__(*args, **kwargs)
 
         self.id         = id
         self.com_code   = com_code
         self.com_name   = com_name
         self.m_type     = m_type
+        self.chg_date   = chg_date
         self.t_volume   = t_volume
         self.data_size  = data_size
 
     def __str__(self):
-        return f'Company(id={self.id}, code={self.com_code}, name={self.com_name}, ' \
-               f'change date={self.chg_date}, number of listed stocks={self.t_volume}, ' \
-               f'data size={self.data_size})'
+        return f'Company(id={self.id}, code_code={self.com_code}, com_name={self.com_name}, ' \
+               f'chg_date={self.chg_date}, t_volume={self.t_volume}, data_size={self.data_size})'
 
 
 class MarketData(models.Model):

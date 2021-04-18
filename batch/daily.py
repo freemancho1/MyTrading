@@ -18,11 +18,16 @@ from django_pandas.io import read_frame
 from config.sysfiles.parameter import *
 from trading.utils import Logger as log
 from trading.utils import StartEndLogging
+from trading.crawler import KrxCrawler
 from stock.wrapper import CompanyWrapper as scw
 from stock.wrapper import MarketDataWrapper as smdw
 
 
-def insert_krx_crawling_data():
+def start_krx_crawling():
+    kc = KrxCrawler()
+    kc.start_crawler()
+
+def update_marketdata_from_crawler():
 
     def file_processing(csv_file_name):
         trading_df = pd.read_csv(os.path.join(CRAWLING_TARGET_PATH, csv_file_name),
@@ -46,7 +51,7 @@ def insert_krx_crawling_data():
     se.end()
 
 
-def insert_company_from_market():
+def update_company_from_market():
     se = StartEndLogging()
 
     market_qs = smdw.get_datas(date=smdw.get_date(is_min=False, is_add_one=False))
@@ -67,6 +72,17 @@ def insert_company_from_market():
     se.end()
 
 
+def update_modelingdata_from_market():
+    se = StartEndLogging()
+
+
+
+    se.end()
+
+
+
 if __name__ == '__main__':
-    # insert_krx_crawling_data()
-    insert_company_from_market()
+    # start_krx_crawling()
+    # update_marketdata_from_crawler()
+    # update_company_from_market()
+    update_modelingdata_from_market()

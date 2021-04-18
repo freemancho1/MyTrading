@@ -1,4 +1,5 @@
 import os
+import platform
 from enum import Enum, IntEnum
 
 _PROJECT_NAME = 'MyTrading'
@@ -10,7 +11,10 @@ _PROJECT_SYSFILE_PATH = os.path.join(_PROJECT_PATH, 'config', 'sysfiles')
 
 _DATA_PATH = os.path.join(_PROJECT_BASE, 'Data')
 
-WEB_DRIVER_PATH = os.path.join(_USER_PATH, '.local', 'bin', 'chromedriver')
+if 'Windows' in platform.platform():
+    WEB_DRIVER_PATH = os.path.join(_USER_PATH, '.local', 'bin', 'chromedriver.exe')
+else:
+    WEB_DRIVER_PATH = os.path.join(_USER_PATH, '.local', 'bin', 'chromedriver')
 KRX_CRAWLING_URL = 'http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020101'
 
 _CODE_FILE_NAME = 'code.csv'
