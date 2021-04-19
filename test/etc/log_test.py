@@ -13,6 +13,8 @@ from trading.utils import Logger as log
 import time
 
 
-for i in range(2):
-    log.debug(f'***************************** {i}')
-    time.sleep(5)
+log.debug(f'*****************************')
+log.info(f'*****************************')
+log.warning(f'*****************************')
+log.error(f'*****************************')
+log.critical(f'*****************************')

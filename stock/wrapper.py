@@ -1,6 +1,7 @@
 import os
 import sys
 import copy
+import time
 import pandas as pd
 
 from django.db.models import Max, Min
@@ -10,6 +11,7 @@ from dateutil.parser import parse
 
 from stock.models import Code, Company, MarketData, ModelingData, ModelingInfo, MyTrading, Account
 from config.sysfiles.parameter import *
+from trading.utils import Logger as log
 from trading.utils import DataConverter as dc
 
 
@@ -234,24 +236,31 @@ class ModelingDataWrapper:
             elif period:
                 data_qs = data_qs.filter(date__gte=period['start'], date__lte=period['end'])
         data_qs = data_qs.order_by('date')
+        time.sleep(10)
+        log.warning(f'====>> {data_qs}')
         return data_qs
 
 
     @staticmethod
     def make_objects(datas, company):
-        data_dt = dc.other_to_dict(copy.deepcopy(datas[['date'] + MODELING_COLUMNS]))
-        print(f'=========\n{data_dt}')
-        data_dt[:]['id'] = None
+        data_dt = copy.deepcopy(datas[['date'] + MODELING_COLUMNS])
+        data_dt['id'] = None
         data_dt['company'] = company
+        log.debug(data_dt.loc[:1, 'company'])
+        log.warning(type(data_dt))
         return data_dt
 
 
     @staticmethod
     def insert(datas):
         modeling_objects = []
-        for data in datas:
-            print(f'data type: {type(data)} - {data}')
-            modeling_objects.append(ModelingData(**data))
+        log.warning('aaaa')
+        for _, data in datas.iterrows():
+            # log.debug(f'data type: {type(data)} - {data}')
+            try:
+                modeling_objects.append(ModelingData(**data))
+            except:
+                log.error(data)
         ModelingData.objects.bulk_create(modeling_objects)
 
 

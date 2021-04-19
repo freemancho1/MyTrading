@@ -9,9 +9,9 @@ LOG_FILE_PATH = os.path.join(os.path.expanduser('~'),
 END = '\033[0m'
 COLOR = {
     'CRITICAL' : '\033[91m',
-    '   ERROR' : '\033[95m',
-    ' WARNING' : '\033[93m',
-    '    INFO' : '\033[97m',
+    '   ERROR' : '\033[31m',
+    ' WARNING' : '\033[95m',
+    '    INFO' : '\033[93m',
     '   DEBUG' : '\033[37m',
 }
 

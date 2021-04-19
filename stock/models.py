@@ -22,7 +22,8 @@ class Code(models.Model):
         self.memo   = memo
 
     def __str__(self):
-        return f'Code(id={self.id}, c_type={self.c_type}, code={self.code}, name={self.name})'
+        return f'Code(id={self.id}, c_type={self.c_type}, code={self.code}, ' \
+               f'name={self.name}, memo={self.memo})'
 
 
 class Company(models.Model):
@@ -121,6 +122,7 @@ class ModelingData(models.Model):
                  *args, **kwargs):
         super(ModelingData, self).__init__(*args, **kwargs)
 
+        print(f'========:: {company}')
         self.id         = id
         self.date       = date
         self.company    = company

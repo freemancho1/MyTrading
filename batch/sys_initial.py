@@ -106,13 +106,13 @@ def insert_modelingdata_from_market():
         market_df = read_frame(get_normal_marketdata(company.com_code))
         company.data_size = len(market_df)
         company.save()
-        for modeling in smlw.make_objects(market_df, company):
-            log.debug(modeling)
+        log.info(company)
         smlw.insert(smlw.make_objects(market_df, company))
 
-    modeling_qs = smlw.get_datas()
-    for modeling in modeling_qs[:3]:
-        log.debug(modeling)
+    modeling_qs = smlw.get_datas(date='2009-01-21')
+    log.warning(f'modeling_qs: {modeling_qs}')
+    # for modeling_data in modeling_qs[:1]:
+    #     log.warning(modeling_data.company_id)
 
     se.end()
 
