@@ -117,7 +117,6 @@ def insert_modelingdata_from_market():
     se.end()
 
 
-
 if __name__ == '__main__':
     # code_init()
     # start_krx_crawling()

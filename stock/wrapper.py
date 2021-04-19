@@ -84,6 +84,7 @@ class CompanyWrapper:
             return company_qs
         else:
             try:
+                # objects.get() 함수는 원하는 값이 없는 경우 에러가 발생함
                 company = Company.objects.get(com_code=com_code)
             except:
                 company = None
@@ -98,6 +99,8 @@ class CompanyWrapper:
             'data_size' : source.get('data_size', 0)
         }
         if update_data is not None:
+            # 갱신용 데이터가 있는 경우에는 기존 ID를 저장하고,
+            # 갱신용 데이터를 소스 데이터로 치환해 소스코드를 간략화 함.
             company_dt['id'] = source['id']
             source = dc.other_to_dict(update_data)
         else:
@@ -178,6 +181,7 @@ class MarketDataWrapper:
     @staticmethod
     def insert(data_df):
 
+        # CODE type 'A': Market Type(KOSDAC, KOSPI..)
         m_type_list = CodeWrapper.get_type_list('A', is_name_index=True)
 
         def make_object(data):
@@ -191,15 +195,21 @@ class MarketDataWrapper:
               - 필요없는 m_dept는 드랍한 후 저장한다.
             :return: MarketData object
             """
-            data['id'] = None
-            data['date'] = parse(str(data['date'])).date()
-            data['m_type'] = m_type_list[str(data['m_type'])]
-            data = data.drop('m_dept')
+            try:
+                data['id'] = None
+                data['date'] = parse(str(data['date'])).date()
+                data['m_type'] = m_type_list[str(data['m_type'])]
+                data = data.drop('m_dept')
+            except:
+                print(data)
+                return None
             return MarketData(**data)
 
         objects = []
         for _, market_data in data_df.iterrows():
-            objects.append(make_object(market_data))
+            new_object = make_object(market_data)
+            if new_object is not None:
+                objects.append(new_object)
 
         MarketData.objects.bulk_create(objects)
 

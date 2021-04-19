@@ -41,15 +41,23 @@ class DateTime:
 
 class StartEndLogging(object):
 
-    def __init__(self):
+    def __init__(self, msg=None):
         self._start = datetime.now()
         self._call_func = re.findall('.*/([\w_\-\.]+).* (.*)',
                                      traceback.format_stack()[-3])
+        self._init_msg = '' if msg is None else msg+' '
         try:
-            self._func_msg = f'{self._call_func[0][0]} {self._call_func[0][1]} '
+            self._func_msg = f'{self._call_func[0][0]} {self._call_func[0][1]} ' \
+                             f'{self._init_msg}'
         except:
-            self._func_msg = ' '
+            self._func_msg = f' {self._init_msg}'
         Logger.info(f'{self._func_msg} started - {self._start}', is_trace=False)
+
+    def mid(self, msg=None):
+        mid_dt = datetime.now()
+        out_msg = '' if msg is None else msg+' '
+        Logger.info(f'{self._func_msg} {out_msg} processing - {mid_dt}, '
+                    f'so far processing time: {mid_dt - self._start}', is_trace=False)
 
     def end(self):
         end_dt = datetime.now()
