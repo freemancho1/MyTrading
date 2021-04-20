@@ -42,7 +42,6 @@ def insert_marketdata_from_crawler():
                                  skiprows=[0])
         trading_df = trading_df.fillna(0)
         trading_df['date'] = re.findall('\d{8}', csv_file_name)[0]
-
         smdw.insert(trading_df)
 
         shutil.move(os.path.join(CRAWLING_TARGET_PATH, csv_file_name),
@@ -51,6 +50,7 @@ def insert_marketdata_from_crawler():
     se = StartEndLogging()
     try:
         for file_name in tqdm(sorted(os.listdir(CRAWLING_TARGET_PATH))):
+            se.mid(file_name)
             file_processing(file_name)
     except Exception as e:
         log.error(e)
