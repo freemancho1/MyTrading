@@ -25,23 +25,24 @@ class CodeWrapper:
         codes_df = codes_df.fillna('')
 
         for _, code in codes_df.iterrows():
-            code['id'] = None
-            code_object = Code(**code)
-            code_object.save()
+            try:
+                code['id'] = None
+                code_object = Code(**code)
+                code_object.save()
+            except Exception as e:
+                log.error(e)
 
 
     @staticmethod
-    def get_type(c_type):
-        return Code.objects.filter(c_type=c_type).order_by('code')
-
-
-    @staticmethod
-    def get_sys_type():
-        return CodeWrapper.get_type(SYSTEM_CODE_TYPE)
-
-
-    @staticmethod
-    def get_type_list(c_type, is_name_index=False):
+    def get_type_list(c_type=SYSTEM_CODE_TYPE, is_name_index=False):
+        """
+        코드 타입별로 리스트를 구함
+        :param c_type: 추출할 코드 타입(기본값은 시스템 코드)
+        :param is_name_index:
+          - True : 코드명을 인덱스로 생성, 값은 코드
+          - False : 코드를 인덱스로 생성, 값은 코드명
+        :return: 코드 타입의 리스트
+        """
         codes_qs = Code.objects.filter(c_type=c_type)
         codes = {}
         for code in codes_qs:
@@ -56,7 +57,8 @@ class CodeWrapper:
     def get_code(code):
         try:
             _code = Code.objects.get(code=code)
-        except:
+        except Exception as e:
+            log.error(e)
             _code = None
         return _code
 
@@ -66,7 +68,8 @@ class CodeWrapper:
     def get_name(code):
         try:
             name = Code.objects.get(code=code).name
-        except:
+        except Exception as e:
+            log.error(e)
             name = None
         return name
 
@@ -88,29 +91,39 @@ class CompanyWrapper:
             try:
                 # objects.get() 함수는 원하는 값이 없는 경우 에러가 발생함
                 company = Company.objects.get(com_code=com_code)
-            except:
+            except Exception as e:
+                log.error(e)
                 company = None
             return company
 
 
     @staticmethod
     def make_object(data, update_data=None):
-        source = dc.other_to_dict(data)
-        company_dt = {
-            'com_code'  : source['com_code'],
-            'data_size' : source.get('data_size', 0)
-        }
-        if update_data is not None:
-            # 갱신용 데이터가 있는 경우에는 기존 ID를 저장하고,
-            # 갱신용 데이터를 소스 데이터로 치환해 소스코드를 간략화 함.
-            company_dt['id'] = source['id']
-            source = dc.other_to_dict(update_data)
-        else:
-            company_dt['id'] = None
-        company_dt['com_name']  = source['com_name']
-        company_dt['m_type']    = source['m_type']
-        company_dt['t_volume']  = source['t_volume']
-        return Company(**company_dt)
+        company_dt = {}
+        try:
+            source = dc.other_to_dict(data)
+            company_dt['com_code'] = source['com_code']
+            company_dt['data_size'] = source.get('data_size', 0)
+
+            if update_data is not None:
+                # 갱신용 데이터가 있는 경우에는 기존 ID를 저장하고,
+                # 갱신용 데이터를 소스 데이터로 치환해 소스코드를 간략화 함.
+                company_dt['id'] = source['id']
+                source = dc.other_to_dict(update_data)
+            else:
+                company_dt['id'] = None
+
+            company_dt['com_name']  = source['com_name']
+            company_dt['m_type']    = source['m_type']
+            company_dt['t_volume']  = source['t_volume']
+
+            new_object = Company(**company_dt)
+        except Exception as e:
+            log.error(e)
+            log.error(f'error data: data={data}, update_data={update_data}, '
+                      f'company_df={company_dt}')
+            new_object = None
+        return new_object
 
 
     @staticmethod

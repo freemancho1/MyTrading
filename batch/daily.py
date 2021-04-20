@@ -65,7 +65,8 @@ def update_company_from_market():
             company_object = scw.make_object(market_data)
         else:
             company_object = scw.make_object(company, market_data)
-        company_objects.append(company_object)
+        if company_object is not None:
+            company_objects.append(company_object)
 
     scw.insert(company_objects)
 

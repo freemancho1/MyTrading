@@ -40,7 +40,8 @@ class Company(models.Model):
 
     def __init__(self,
                  id, com_code, com_name, m_type,
-                 chg_date=datetime.now().date(), t_volume=0., data_size=0,
+                 # chg_date=datetime.now().date(), t_volume=0., data_size=0,
+                 chg_date=None, t_volume=0., data_size=0,
                  *args, **kwargs):
         super(Company, self).__init__(*args, **kwargs)
 
@@ -53,8 +54,10 @@ class Company(models.Model):
         self.data_size  = data_size
 
     def __str__(self):
-        return f'Company(id={self.id}, code_code={self.com_code}, com_name={self.com_name}, ' \
-               f'chg_date={self.chg_date}, t_volume={self.t_volume}, data_size={self.data_size})'
+        return f'Company(id={self.id}, ' \
+               f'code_code={self.com_code}, com_name={self.com_name}, ' \
+               f'm_type={self.m_type}, chg_date={self.chg_date}, ' \
+               f't_volume={self.t_volume}, data_size={self.data_size})'
 
 
 class MarketData(models.Model):
@@ -100,14 +103,18 @@ class MarketData(models.Model):
         self.t_value    = t_value
 
     def __str__(self):
-        return f'MarketData(id={self.id}, date={self.date}, com_code={self.com_code}, ' \
-               f'prices=[{self.open}/ {self.low}/ {self.high}/ {self.close}/ {self.volume}])'
+        return f'MarketData(id={self.id}, ' \
+               f'date={self.date}, com_code={self.com_code}, ' \
+               f'prices=[{self.open}/ {self.low}/ {self.high}/ {self.close}], ' \
+               f'diff={self.diff}, ratio={self.ratio}, ' \
+               f'volume={self.volume}, value={self.value}, ' \
+               f't_volume={self.t_volume}, t_value={self.t_value})'
 
 
 class ModelingData(models.Model):
 
     date        = models.DateField('Trading Date', null=False, db_index=True)
-    company     = models.ForeignKey(Company, on_delete=models.CASCADE, null=False, db_index=True)
+    com_code    = models.CharField('Company Code', max_length=7, null=False, db_index=True)
     open        = models.FloatField('Open Price', null=False)
     low         = models.FloatField('Low Price', null=False)
     high        = models.FloatField('High Price', null=False)
@@ -118,14 +125,13 @@ class ModelingData(models.Model):
         ordering = ['-date']
 
     def __init__(self,
-                 id, date, company, open, low, high, close, volume,
+                 id, date, com_code, open, low, high, close, volume,
                  *args, **kwargs):
         super(ModelingData, self).__init__(*args, **kwargs)
 
-        print(f'========:: {company}')
         self.id         = id
         self.date       = date
-        self.company    = company
+        self.com_code   = com_code
         self.open       = open
         self.low        = low
         self.high       = high
@@ -134,14 +140,16 @@ class ModelingData(models.Model):
 
 
     def __str__(self):
-        return f'ModelingData(id={self.id}, date={self.date}, com_code={self.company.com_code}, ' \
-               f'prices=[{self.open}/ {self.low}/ {self.high}/ {self.close}/ {self.volume}])'
+        return f'ModelingData(id={self.id}, date={self.date}, ' \
+               f'com_code={self.com_code}, ' \
+               f'prices=[{self.open}/ {self.low}/ {self.high}/ {self.close}], ' \
+               f'volume={self.volume})'
 
 
 class ModelingInfo(models.Model):
 
     date        = models.DateField('Modeling Date', null=False, db_index=True)
-    company     = models.ForeignKey(Company, on_delete=models.CASCADE, null=False)
+    com_code    = models.CharField('Company Code', max_length=7, null=False, db_index=True)
     r_open      = models.FloatField('Real Today Open Price', null=True)
     r_close     = models.FloatField('Real Today Close Price', null=True)
     p_open      = models.FloatField('Predict Open Price', null=True)
@@ -149,21 +157,21 @@ class ModelingInfo(models.Model):
     o_ratio     = models.FloatField('Open Price Ratio', null=True)
     c_ratio     = models.FloatField('Close Price Ratio', null=True)
     p_ratio     = models.FloatField('Predict Open-Close Price Ratio', null=True)
-    t_accuracy  = models.FloatField('Test Accuracy', null=True)
+    accuracy    = models.FloatField('Test Accuracy', null=True)
 
     class Meta:
         ordering = ['-date']
 
     def __init__(self,
-                 id, date, company,
+                 id, date, com_code,
                  r_open=None, r_close=None, p_open=None, p_close=None,
-                 o_ratio=None, c_ratio=None, p_ratio=None, t_accuracy=None,
+                 o_ratio=None, c_ratio=None, p_ratio=None, accuracy=None,
                  *args, **kwargs):
         super(ModelingInfo, self).__init__(*args, **kwargs)
 
         self.id         = id
         self.date       = date
-        self.company    = company
+        self.com_code   = com_code
         self.r_open     = r_open
         self.r_close    = r_close
         self.p_open     = p_open
@@ -171,19 +179,24 @@ class ModelingInfo(models.Model):
         self.o_ratio    = o_ratio
         self.c_ratio    = c_ratio
         self.p_ratio    = p_ratio
-        self.t_accuracy = t_accuracy
+        self.accuracy   = accuracy
 
     def __str__(self):
-        return f'ModelingInfo(id={self.id}, date={self.date}, com_code={self.company.com_code}, ' \
-               f'close ratio={self.c_ratio}, test accuracy={self.t_accuracy})'
+        return f'ModelingInfo(id={self.id}, date={self.date}, ' \
+               f'com_code={self.com_code}, ' \
+               f'real data=[open={self.r_open}, close={self.r_close}], ' \
+               f'predict data=[open={self.p_open}, close={self.p_close}], ' \
+               f'ratio=[open={self.o_ratio}, close={self.o_close}, close/open={self.p_ratio}], ' \
+               f'accuracy={self.accuracy})'
 
 
 class MyTrading(models.Model):
 
     date        = models.DateField('Trading Date', null=False, db_index=True)
+    com_code    = models.CharField('Company Code', max_length=7, null=False, db_index=True)
+    r_open      = models.FloatField('Real Today Open Price', null=True)
     t_type      = models.CharField('Trading Type', max_length=4, null=False)
     t_count     = models.IntegerField('Trading Count', null=False)
-    company     = models.ForeignKey(Company, on_delete=models.CASCADE, null=False)
     buy_price   = models.FloatField('Buy Price')
     sell_price  = models.FloatField('Sell Price')
     ratio       = models.FloatField('Ratio')
@@ -191,10 +204,10 @@ class MyTrading(models.Model):
     profit      = models.FloatField('Trading Profit')
 
     class Meta:
-        ordering = ['-date', 't_type', 't_count']
+        ordering = ['-date', 'com_code']
 
     def __init__(self,
-                 id, date, t_type, t_count, company,
+                 id, date, com_code, t_type, t_count,
                  buy_price=0, sell_price=0, ratio=.0,
                  volume=0, profit=.0,
                  *args, **kwargs):
@@ -202,9 +215,9 @@ class MyTrading(models.Model):
 
         self.id         = id
         self.date       = date
+        self.com_code   = com_code
         self.t_type     = t_type
         self.t_count    = t_count
-        self.company    = company
         self.buy_price  = buy_price
         self.sell_price = sell_price
         self.ratio      = ratio
@@ -212,8 +225,10 @@ class MyTrading(models.Model):
         self.profit     = profit
 
     def __str__(self):
-        return f'MyTrading(id={self.id}, date={self.date}, com_code={self.company.com_code}, ' \
-               f't_type/count={self.t_type}/{self.t_count}, profit={self.profit})'
+        return f'MyTrading(id={self.id}, date={self.date}, com_code={self.com_code}, ' \
+               f't_type/count=[{self.t_type}/{self.t_count}], ' \
+               f'price=[buy={self.buy_price}, sell={self.sell_price}], ' \
+               f'ratio={self.ratio}, volume={self.volume}, profit={self.profit})'
 
 
 class Account(models.Model):
@@ -221,17 +236,17 @@ class Account(models.Model):
     t_type      = models.CharField('Trading Type', max_length=4, null=False)
     t_count     = models.IntegerField('Trading Count', null=False)
     base_money  = models.FloatField('Base Money', null=False)
-    balance     = models.FloatField('Current Balance', null=False)
-    ratio       = models.FloatField('Ratio', null=False)
-    first_date  = models.DateField('First Trading Date', null=False, auto_now_add=True) # 레코드 생성시 한번 갱신
-    last_date   = models.DateField('Last Trading Date', auto_now=True)                  # 레코드 변경시 자동 갱신
+    balance     = models.FloatField('Current Balance', null=True)
+    ratio       = models.FloatField('Ratio', null=True)
+    first_date  = models.DateField('First Trading Date', auto_now_add=True) # 레코드 생성시 한번 갱신
+    last_date   = models.DateField('Last Trading Date', auto_now=True)      # 레코드 변경시 자동 갱신
 
     class Meta:
         ordering = ['t_type', 't_count']
 
     def __init__(self,
-                 id, t_type, t_count, base_money, balance, ratio,
-                 *args, **kwargs):
+                 id, t_type, t_count, base_money, balance=.0, ratio=.0,
+                 first_date=None, last_date=None, *args, **kwargs):
         super(Account, self).__init__(*args, **kwargs)
 
         self.id         = id
@@ -240,7 +255,11 @@ class Account(models.Model):
         self.base_money = base_money
         self.balance    = balance
         self.ratio      = ratio
+        self.first_date = first_date
+        self.last_date  = last_date
 
     def __str__(self):
-        return f'Account(id={self.id}, trading type={self.t_type}, trading count={self.t_count}, ' \
-               f'balance={self.balance:,.0})'
+        return f'Account(id={self.id}, ' \
+               f'trading type={self.t_type}, trading count={self.t_count}, ' \
+               f'balance={self.balance:,.0}, ratio={self.ratio:.0}, ' \
+               f'first_date={self.first_date}, last_date={self.last_date})'

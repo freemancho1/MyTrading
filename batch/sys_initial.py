@@ -67,7 +67,9 @@ def insert_company_from_market():
 
     company_objects = []
     for market_data in market_qs:
-        company_objects.append(scw.make_object(market_data))
+        company_object = scw.make_object(market_data)
+        if company_object is not None:
+            company_objects.append(company_object)
     scw.insert(company_objects)
 
     se.end()
@@ -118,8 +120,8 @@ def insert_modelingdata_from_market():
 
 
 if __name__ == '__main__':
-    # code_init()
+    code_init()
     # start_krx_crawling()
-    # insert_marketdata_from_crawler()
+    insert_marketdata_from_crawler()
     # insert_company_from_market()
-    insert_modelingdata_from_market()
+    # insert_modelingdata_from_market()
