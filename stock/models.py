@@ -40,7 +40,6 @@ class Company(models.Model):
 
     def __init__(self,
                  id, com_code, com_name, m_type,
-                 # chg_date=datetime.now().date(), t_volume=0., data_size=0,
                  chg_date=None, t_volume=0., data_size=0,
                  *args, **kwargs):
         super(Company, self).__init__(*args, **kwargs)
