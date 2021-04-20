@@ -215,8 +215,8 @@ class MarketDataWrapper:
                 data['date'] = parse(str(data['date'])).date()
                 data['m_type'] = m_type_list[str(data['m_type'])]
                 data = data.drop('m_dept')
-            except:
-                print(data)
+            except Exception as e:
+                log.error(e)
                 return None
             return MarketData(**data)
 
