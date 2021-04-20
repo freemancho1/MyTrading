@@ -255,23 +255,20 @@ class ModelingDataWrapper:
 
 
     @staticmethod
-    def make_objects(datas, company):
-        data_dt = copy.deepcopy(datas[['date'] + MODELING_COLUMNS])
-        data_dt['id'] = None
-        data_dt['company'] = company
-        log.debug(data_dt.loc[:1, 'company'])
-        log.warning(type(data_dt))
-        return data_dt
+    def make_objects(datas, com_code):
+        data_df = copy.deepcopy(datas[['date'] + MODELING_COLUMNS])
+        data_df['id'] = None
+        data_df['com_code'] = com_code
+        return data_df
 
 
     @staticmethod
     def insert(datas):
         modeling_objects = []
-        log.warning('aaaa')
         for _, data in datas.iterrows():
-            # log.debug(f'data type: {type(data)} - {data}')
             try:
-                modeling_objects.append(ModelingData(**data))
+                new_object = ModelingData(**data)
+                modeling_objects.append(new_object)
             except:
                 log.error(data)
         ModelingData.objects.bulk_create(modeling_objects)

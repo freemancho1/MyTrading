@@ -108,20 +108,15 @@ def insert_modelingdata_from_market():
         market_df = read_frame(get_normal_marketdata(company.com_code))
         company.data_size = len(market_df)
         company.save()
-        log.info(company)
-        smlw.insert(smlw.make_objects(market_df, company))
-
-    modeling_qs = smlw.get_datas(date='2009-01-21')
-    log.warning(f'modeling_qs: {modeling_qs}')
-    # for modeling_data in modeling_qs[:1]:
-    #     log.warning(modeling_data.company_id)
+        log.debug(company)
+        smlw.insert(smlw.make_objects(market_df, company.com_code))
 
     se.end()
 
 
 if __name__ == '__main__':
-    code_init()
+    # code_init()
     # start_krx_crawling()
-    insert_marketdata_from_crawler()
+    # insert_marketdata_from_crawler()
     # insert_company_from_market()
-    # insert_modelingdata_from_market()
+    insert_modelingdata_from_market()
