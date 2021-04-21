@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import copy
 import time
@@ -249,23 +250,19 @@ class ModelingDataWrapper:
             elif period:
                 data_qs = data_qs.filter(date__gte=period['start'], date__lte=period['end'])
         data_qs = data_qs.order_by('date')
-        time.sleep(10)
-        log.warning(f'====>> {data_qs}')
         return data_qs
 
 
     @staticmethod
-    def make_objects(datas, com_code):
-        data_df = copy.deepcopy(datas[['date'] + MODELING_COLUMNS])
-        data_df['id'] = None
-        data_df['com_code'] = com_code
-        return data_df
-
-
-    @staticmethod
     def insert(datas):
+
+        def make_object(data_df):
+            market_df = copy.deepcopy(data_df[['date', 'com_code']+MODELING_COLUMNS])
+            market_df['id'] = None
+            return market_df
+
         modeling_objects = []
-        for _, data in datas.iterrows():
+        for _, data in make_object(datas).iterrows():
             try:
                 new_object = ModelingData(**data)
                 modeling_objects.append(new_object)
@@ -276,4 +273,56 @@ class ModelingDataWrapper:
 
     @staticmethod
     def delete_all():
-        ModelingInfo.objects.all().delete()
+        ModelingData.objects.all().delete()
+
+
+class AccountWrapper:
+
+    @staticmethod
+    def insert(datas):
+        datas_size = len(datas)
+        datas_type = re.findall(".*\.(\w+)\.",
+                                str(type(datas).replace("'",".")))[0]
+        log.debug(f'datas size: {datas_size}, datas type: {datas_type}')
+
+        new_object = None
+        if datas_size == 1:
+            if datas_type in ['dict', 'Series', 'DataFrame']:
+                new_object = Account(**datas)
+            elif datas_type == 'Account':
+                new_object = datas
+            else:
+                log.warning(f'Not supported data type: {datas_type}')
+            if new_object is not None:
+                new_object.save()
+        else:
+            pass
+        #
+        #
+        #
+        # try:
+        #     log.warning(f'data type: {type(data)}')
+        #     log.debug(f'insert account data: {data}')
+        #     new_object = Account(**data)
+        #     log.info(f'new account object: {new_object}')
+        #     new_object.save()
+        #     log.warning(f'saved account object: {new_object}')
+        # except Exception as e:
+        #     log.error(e)
+
+
+    @staticmethod
+    def get_datas(acc_name=None, t_type=None):
+        if acc_name is not None:
+            # unique field
+            data_qs = Account.objects.get(acc_name=acc_name)
+        elif t_type is not None:
+            data_qs = Account.objects.filter(t_type=t_type).order_by('acc_name')
+        else:
+            data_qs = Account.objects.all().order_by('acc_name')
+        return data_qs
+
+
+    @staticmethod
+    def delete_all():
+        Account.objects.all().delete()

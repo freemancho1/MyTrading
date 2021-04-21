@@ -8,7 +8,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 import django
 django.setup()
 
-import re
+import re_test
 import shutil
 import pandas as pd
 import copy

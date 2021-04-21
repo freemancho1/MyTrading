@@ -87,9 +87,12 @@ def insert_modelingdata_from_market():
         company_market_qs = smdw.get_datas(com_code=com_code)
         first_data = company_market_qs.first()
         yesterday_data, first_normal_data = first_data, first_data
-        diff_ratio = 0.
         if first_data.t_volume != 0:
             diff_ratio = company_market_qs.last().t_volume / first_data.t_volume
+        else:
+            # 첫번째 t_volume값이 0이기 때문에 전체 변동량 체크가 불가능함.
+            # 따라서 세부 체크가 수행될 수 있도록 diff_ratio를 설정함
+            diff_ratio = TOTAL_CHECK_MAX_RATIO + 1.
 
         if diff_ratio > TOTAL_CHECK_MAX_RATIO or diff_ratio < TOTAL_CHECK_MIN_RATIO:
             for market_data in company_market_qs[1:]:   # 첫번째 값은 위에서 first()을 이용해 이미 사용
@@ -104,19 +107,18 @@ def insert_modelingdata_from_market():
                   f'total({len(company_market_qs)}), normal({len(normal_qs)})')
         return normal_qs
 
-    for company in company_qs[:1]:
+    for company in tqdm(company_qs):
         market_df = read_frame(get_normal_marketdata(company.com_code))
         company.data_size = len(market_df)
         company.save()
-        log.debug(company)
-        smlw.insert(smlw.make_objects(market_df, company.com_code))
+        smlw.insert(market_df)
 
     se.end()
 
 
 if __name__ == '__main__':
-    code_init()
+    # code_init()
     # start_krx_crawling()
-    insert_marketdata_from_crawler()
-    insert_company_from_market()
-    # insert_modelingdata_from_market()
+    # insert_marketdata_from_crawler()
+    # insert_company_from_market()
+    insert_modelingdata_from_market()

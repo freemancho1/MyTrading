@@ -232,6 +232,7 @@ class MyTrading(models.Model):
 
 class Account(models.Model):
 
+    acc_name    = models.CharField('Account Name', max_length=20, null=False, unique=True)
     t_type      = models.CharField('Trading Type', max_length=4, null=False)
     t_count     = models.IntegerField('Trading Count', null=False)
     base_money  = models.FloatField('Base Money', null=False)
@@ -244,11 +245,13 @@ class Account(models.Model):
         ordering = ['t_type', 't_count']
 
     def __init__(self,
-                 id, t_type, t_count, base_money, balance=.0, ratio=.0,
-                 first_date=None, last_date=None, *args, **kwargs):
+                 id, acc_name, t_type, t_count, base_money,
+                 balance=.0, ratio=.0, first_date=None, last_date=None,
+                 *args, **kwargs):
         super(Account, self).__init__(*args, **kwargs)
 
         self.id         = id
+        self.acc_name   = acc_name
         self.t_type     = t_type
         self.t_count    = t_count
         self.base_money = base_money
@@ -258,7 +261,8 @@ class Account(models.Model):
         self.last_date  = last_date
 
     def __str__(self):
-        return f'Account(id={self.id}, ' \
+        return f'Account(id={self.id}, acc_name={self.acc_name}, ' \
                f'trading type={self.t_type}, trading count={self.t_count}, ' \
+               f'base_money={self.base_money}, ' \
                f'balance={self.balance:,.0}, ratio={self.ratio:.0}, ' \
                f'first_date={self.first_date}, last_date={self.last_date})'
