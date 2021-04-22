@@ -21,6 +21,7 @@ class DataConverter:
             chg_data = data.to_dict()
         elif 'models' in data_type:
             chg_data = data.__dict__
+            del chg_data['_state']
         else:
             chg_data = data
             Logger.info(f'Unsupported data type: type({data_type})')

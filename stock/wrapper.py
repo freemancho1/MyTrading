@@ -280,35 +280,63 @@ class AccountWrapper:
 
     @staticmethod
     def insert(datas):
-        datas_size = len(datas)
+        base_table = Account
+
+        def make_object(new_data):
+            if 'DataFrame' in str(type(new_data)):
+                new_data = dc.other_to_dict(new_data)
+            new_data['id'] = new_data.get('id', None)
+            return base_table(**new_data)
+
+        def save_list(lists):
+            for data in lists:
+                data.save()
+
+        def insert_list(lists):
+            subs_type = re.findall(".*\.(\w+)\.",
+                                   str(type(lists[0])).replace("'", "."))[0]
+            if subs_type in str(base_table):
+                if lists[0].id is not None:
+                    save_list(lists)
+                else:
+                    base_table.objects.bulk_create(datas)
+            elif subs_type in ['dict', 'Series']:
+                new_objects = []
+                for data in lists:
+                    new_objects.append(make_object(data))
+                if datas[0]['id'] is not None:
+                    save_list(new_objects)
+                else:
+                    base_table.objects.bulk_create(new_objects)
+            else:
+                log.error(f'Unsupported type : {datas_type} - {subs_type}')
+
+        def insert_df(dataframes):
+            new_objects = []
+            for _, data in dataframes.iterrows():
+                new_objects.append(make_object(data))
+            if new_objects[0].id is not None:
+                save_list(new_objects)
+            else:
+                base_table.objects.bulk_create(new_objects)
+
         datas_type = re.findall(".*\.(\w+)\.",
-                                str(type(datas).replace("'",".")))[0]
+                                str(type(datas)).replace("'","."))[0]
+        # datas의 type이 'base_table'값이면 len()함수가 오류가 나기 때문에 1로 지정
+        datas_size = 1 if datas_type in str(base_table) else len(datas)
         log.debug(f'datas size: {datas_size}, datas type: {datas_type}')
 
-        new_object = None
-        if datas_size == 1:
-            if datas_type in ['dict', 'Series', 'DataFrame']:
-                new_object = Account(**datas)
-            elif datas_type == 'Account':
-                new_object = datas
-            else:
-                log.warning(f'Not supported data type: {datas_type}')
-            if new_object is not None:
-                new_object.save()
+        if datas_type in str(base_table):
+            datas.save()
+        elif (datas_type == 'DataFrame' and datas_size == 1) or \
+             datas_type in ['dict', 'Series']:
+            make_object(datas).save()
+        elif datas_type == 'list':
+            insert_list(datas)
+        elif datas_type == 'DataFrame':
+            insert_df(datas)
         else:
-            pass
-        #
-        #
-        #
-        # try:
-        #     log.warning(f'data type: {type(data)}')
-        #     log.debug(f'insert account data: {data}')
-        #     new_object = Account(**data)
-        #     log.info(f'new account object: {new_object}')
-        #     new_object.save()
-        #     log.warning(f'saved account object: {new_object}')
-        # except Exception as e:
-        #     log.error(e)
+            log.error(f'Unsupported type : {datas_type}')
 
 
     @staticmethod
