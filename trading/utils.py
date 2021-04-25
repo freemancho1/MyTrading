@@ -60,9 +60,10 @@ class StartEndLogging(object):
         Logger.info(f'{self._func_msg} {out_msg} processing - {mid_dt}, '
                     f'so far processing time: {mid_dt - self._start}', is_trace=False)
 
-    def end(self):
+    def end(self, msg=None):
         end_dt = datetime.now()
-        Logger.info(f'{self._func_msg} ended - {end_dt}, '
+        out_msg = '' if msg is None else msg+' '
+        Logger.info(f'{self._func_msg} {out_msg} ended - {end_dt}, '
                     f'total processing time: {end_dt - self._start}', is_trace=False)
 
 

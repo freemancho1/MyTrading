@@ -18,9 +18,9 @@ def save_from_marketdata():
     log.debug(f'market_qs size: {len(market_qs)}')
 
 def get_data():
-    company = scw.get_datas('060310')
+    company = scw.get('060310')
     log.debug(company)
-    company_qs = scw.get_datas()
+    company_qs = scw.gets('id')
     for com in company_qs[:2]:
         log.debug(com)
 

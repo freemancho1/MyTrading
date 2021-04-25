@@ -20,18 +20,21 @@ def get_date():
     log.debug(f'max data + 1days: {smdw.get_date(is_add_one=True)}')
     log.debug(f'min date: {smdw.get_date(is_min=True)}')
 
-def get_datas():
-    log.debug(f'get datas: {smdw.get_datas()}')
-
 def insert():
-    data_df = pd.read_csv(os.path.join(CRAWLING_TARGET_PATH, '20210414.csv'),
-                          delimiter=',', encoding='CP949', names=COLUMN_NAMES,
-                          skiprows=[0])
-    data_df['date'] = '20210414'
-    smdw.insert(data_df[:1])
+    trading_df = pd.read_csv(os.path.join(CRAWLING_TARGET_PATH, '20210414.csv'),
+                             delimiter=',', encoding='CP949', names=COLUMN_NAMES,
+                             skiprows=[0])
+
+    trading_df = trading_df.fillna(0)
+    trading_df['date'] = parse(str(re.findall('\d{8}', csv_file_name)[0])).date()
+    trading_df['m_type'] = trading_df['m_type'] \
+        .apply(lambda m_type: m_type_list[str(m_type)])
+    trading_df = trading_df.drop(['m_dept'], axis=1)
+
+    smdw.insert(trading_df)
 
 def delete():
-    smdw.delete_all()
+    smdw.delete()
 
 if __name__ == '__main__':
     # get_date()

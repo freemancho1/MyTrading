@@ -28,20 +28,38 @@ from stock.wrapper import ModelingDataWrapper as smlw
 
 
 def code_init():
-    scdw.init()
+    se = StartEndLogging()
+    try:
+        scdw.delete()
+        code_df = pd.read_csv(CODE_FILE_PATH, delimiter=',', encoding='utf-8')
+        code_df = code_df.fillna('')
+        scdw.insert(code_df)
+    except Exception as e:
+        log.error(e)
+        sys.exit()
+    se.end(f'{len(code_df)} codes insert!')
+
 
 def start_krx_crawling():
     kc = KrxCrawler()
     kc.start_crawler()
 
+
 def insert_marketdata_from_crawler():
+
+    m_type_list = scdw.get_type_list('A', is_name_index=True)
 
     def file_processing(csv_file_name):
         trading_df = pd.read_csv(os.path.join(CRAWLING_TARGET_PATH, csv_file_name),
                                  delimiter=',', encoding='CP949', names=COLUMN_NAMES,
                                  skiprows=[0])
+
         trading_df = trading_df.fillna(0)
-        trading_df['date'] = re.findall('\d{8}', csv_file_name)[0]
+        trading_df['date'] = parse(str(re.findall('\d{8}', csv_file_name)[0])).date()
+        trading_df['m_type'] = trading_df['m_type']\
+            .apply(lambda m_type: m_type_list[str(m_type)])
+        trading_df = trading_df.drop(['m_dept'], axis=1)
+
         smdw.insert(trading_df)
 
         shutil.move(os.path.join(CRAWLING_TARGET_PATH, csv_file_name),
@@ -50,8 +68,8 @@ def insert_marketdata_from_crawler():
     se = StartEndLogging()
     try:
         for file_name in tqdm(sorted(os.listdir(CRAWLING_TARGET_PATH))):
-            se.mid(file_name)
             file_processing(file_name)
+            se.mid(file_name)
     except Exception as e:
         log.error(e)
         sys.exit()
@@ -61,8 +79,8 @@ def insert_marketdata_from_crawler():
 def insert_company_from_market():
     se = StartEndLogging()
 
-    scw.delete_all()
-    market_qs = smdw.get_datas(date=smdw.get_date(is_add_one=False))
+    scw.delete()
+    market_qs = smdw.gets(date=smdw.get_date(is_add_one=False))
     log.debug(f'market data size: {len(market_qs)}')
 
     company_objects = []
@@ -78,13 +96,13 @@ def insert_company_from_market():
 def insert_modelingdata_from_market():
     se = StartEndLogging()
 
-    company_qs = scw.get_datas()
+    company_qs = scw.gets('id')
     company_size = len(company_qs)
     log.debug(f'company size: {company_size}')
-    smlw.delete_all()
+    smlw.delete()
 
     def get_normal_marketdata(com_code):
-        company_market_qs = smdw.get_datas(com_code=com_code)
+        company_market_qs = smdw.gets(com_code=com_code)
         first_data = company_market_qs.first()
         yesterday_data, first_normal_data = first_data, first_data
         if first_data.t_volume != 0:
@@ -103,7 +121,7 @@ def insert_modelingdata_from_market():
                 yesterday_data = market_data
 
         normal_qs = company_market_qs.filter(date__gte=first_normal_data.date)
-        log.debug(f'{com_code} modeling data size: '
+        log.debug(f'com_code: {com_code},  modeling data size: '
                   f'total({len(company_market_qs)}), normal({len(normal_qs)})')
         return normal_qs
 
@@ -111,6 +129,7 @@ def insert_modelingdata_from_market():
         market_df = read_frame(get_normal_marketdata(company.com_code))
         company.data_size = len(market_df)
         company.save()
+        market_df = market_df[['date', 'com_code']+MODELING_COLUMNS]
         smlw.insert(market_df)
 
     se.end()

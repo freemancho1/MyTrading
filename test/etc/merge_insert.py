@@ -45,7 +45,7 @@ def insert_marketdata_from_mergefile():
     #     insert_se.mid(f'{loop_cnt * 3000}')
     #     loop_cnt += 1
 
-    smdw.delete_all()
+    smdw.delete()
 
     insert_se.end()
 
