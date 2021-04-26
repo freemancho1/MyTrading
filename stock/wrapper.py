@@ -119,6 +119,17 @@ class CompanyWrapper:
 
 
     @staticmethod
+    def gets_modeling_target():
+        try:
+            data_qs = bw.gets(Company,
+                              'com_code',
+                              data_size__gt=MODELING_SKIP_DATA_SIZE)
+        except Exception as e:
+            raise Exception(e)
+        return data_qs
+
+
+    @staticmethod
     def get(com_code):
         try:
             data = bw.get(Company, com_code=com_code)
@@ -198,6 +209,7 @@ class ModelingDataWrapper:
             raise Exception(e)
         return date
 
+
     @staticmethod
     def gets(*args, **kwargs):
         try:
@@ -228,6 +240,42 @@ class ModelingDataWrapper:
     def delete(**kwargs):
         try:
             bw.delete(ModelingData, **kwargs)
+        except Exception as e:
+            raise Exception(e)
+
+
+class ModelingInfoWrapper:
+
+    @staticmethod
+    def gets(*args, **kwargs):
+        try:
+            data_qs = bw.gets(ModelingInfo, *args, **kwargs)
+        except Exception as e:
+            raise Exception(e)
+        return data_qs
+
+
+    @staticmethod
+    def get(**kwargs):
+        try:
+            data = bw.get(ModelingInfo, **kwargs)
+        except Exception as e:
+            raise Exception(e)
+        return data
+
+
+    @staticmethod
+    def insert(datas):
+        try:
+            bw.insert(ModelingInfo, datas)
+        except Exception as e:
+            raise Exception(e)
+
+
+    @staticmethod
+    def delete(**kwargs):
+        try:
+            bw.delete(ModelingInfo, **kwargs)
         except Exception as e:
             raise Exception(e)
 
