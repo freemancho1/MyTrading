@@ -12,6 +12,7 @@ from modeling.utils import Modeling as ml
 from modeling.nn_models import lstm
 from stock.wrapper import CompanyWrapper as scw
 from stock.wrapper import ModelingDataWrapper as smlw
+from stock.wrapper import ModelingInfoWrapper as smiw
 
 
 class LstmTraining(object):
@@ -86,23 +87,23 @@ class LstmTraining(object):
         model = self.training([train['x'], train['yc']], [test['x'], test['yc']])
         model.load_weights(self.etc_info['model_file_name'])
         pred_yc = model.predict(test['x'])
-        self.model_info['t_accuracy'] = ml.accuracy_trend(test['yc'], pred_yc)
-        self.model_info['p_close'] = pred_yc[-1] * self.etc_info['max_price']
+        self.model_info['accuracy'] = ml.accuracy_trend(test['yc'], pred_yc)
+        self.model_info['p_close'] = float(pred_yc[-1] * self.etc_info['max_price'])
 
-        if self.model_info['t_accuracy'] < .5:
-            log.debug(f'accuracy skip: {self.model_info["t_accuracy"]}')
+        if self.model_info['accuracy'] < .5:
+            # log.debug(f'accuracy skip: {self.model_info["accuracy"]}')
             self.is_skip['accuracy'] = True
         elif self.model_info['p_close'] < self.model_info['r_close']:
-            log.debug(f'{self.model_info["com_code"]}, '
-                      f'trend skip: p_value({self.model_info["p_close"]}), '
-                      f'r_value({self.model_info["r_close"]})')
+            # log.debug(f'{self.model_info["com_code"]}, '
+            #           f'trend skip: p_value({self.model_info["p_close"]}), '
+            #           f'r_value({self.model_info["r_close"]})')
             self.is_skip['trend'] = True
         else:
             model2 = self.training([train['x'], train['yo']], [test['x'], test['yo']])
             model2.load_weights(self.etc_info['model_file_name'])
             pred_yo = model2.predict(test['x'])
-            self.model_info['p_open'] = pred_yo[-1] * self.etc_info['max_price']
+            self.model_info['p_open'] = float(pred_yo[-1] * self.etc_info['max_price'])
             model_info = ml.cal_ratio(self.model_info)
-            log.info(model_info)
+            smiw.insert(model_info)
 
         return self.is_skip

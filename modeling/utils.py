@@ -64,7 +64,10 @@ class Modeling:
 
     @staticmethod
     def cal_ratio(modelinfo_dt):
-        modelinfo_dt['o_ratio'] = modelinfo_dt['p_open'] / modelinfo_dt['r_open']
-        modelinfo_dt['c_ratio'] = modelinfo_dt['p_close'] / modelinfo_dt['r_close']
-        modelinfo_dt['p_ratio'] = modelinfo_dt['p_open'] /modelinfo_dt['p_close']
+        try:
+            modelinfo_dt['o_ratio'] = modelinfo_dt['p_open'] / modelinfo_dt['r_open']
+            modelinfo_dt['c_ratio'] = modelinfo_dt['p_close'] / modelinfo_dt['r_close']
+            modelinfo_dt['p_ratio'] = modelinfo_dt['p_open'] /modelinfo_dt['p_close']
+        except:
+            modelinfo_dt['o_ratio'], modelinfo_dt['c_ratio'], modelinfo_dt['p_ratio'] = 0., 0., 0.
         return modelinfo_dt

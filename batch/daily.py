@@ -24,6 +24,7 @@ from stock.wrapper import CodeWrapper as scdw
 from stock.wrapper import CompanyWrapper as scw
 from stock.wrapper import MarketDataWrapper as smdw
 from stock.wrapper import ModelingDataWrapper as smlw
+from modeling.nn_training import LstmTraining
 
 
 def start_krx_crawling():
@@ -102,12 +103,38 @@ def update_modelingdata_from_market():
     se.end()
 
 
+def today_modeling():
+    se = StartEndLogging()
+
+    modeling_target_qs = scw.gets_modeling_target()
+    modeling_size = len(modeling_target_qs)
+
+    cnt_processing = 0
+    cnt_skip_trend, cnt_skip_accuracy = 0, 0
+    for modeling_company in modeling_target_qs[440:]:
+        model = LstmTraining(modeling_company.com_code, LSTM_KWARGS)
+        is_skip = model.modeling()
+        cnt_processing += 1
+        se.mid(f'{modeling_company.com_code}, {cnt_processing}/{modeling_size}')
+        if is_skip['trend']:
+            cnt_skip_trend += 1
+        if is_skip['accuracy']:
+            cnt_skip_accuracy += 1
+    log.info(f'modeling total count: {len(modeling_target_qs)}, '
+             f'trend skip: {cnt_skip_trend}, accuracy skip: {cnt_skip_accuracy}')
+
+
+    se.end()
+
+
 if __name__ == '__main__':
     tse = StartEndLogging('daily processing')
 
-    start_krx_crawling()
-    update_marketdata_from_crawler()
-    update_company_from_market()
-    update_modelingdata_from_market()
+    # start_krx_crawling()
+    # update_marketdata_from_crawler()
+    # update_company_from_market()
+    # update_modelingdata_from_market()
+
+    today_modeling()
 
     tse.end('daily processing')

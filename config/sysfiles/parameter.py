@@ -1,5 +1,6 @@
 import os
 import platform
+import tensorflow as  tf
 from enum import Enum, IntEnum
 
 _PROJECT_NAME = 'MyTrading'
@@ -93,3 +94,24 @@ class ByteSize(Enum):
     M = 1024 * 1024
     G = 1024 * 1024 * 1024
     T = 1024 * 1024 * 1024 * 1024
+
+
+# Modeling Parameter
+LSTM_KWARGS = {
+    'window_size'       : MODELING_WINDOW_SIZE,
+    'test_ratio'        : 1. - TRAIN_DATA_RATIO,
+    'model_save_path'   : MODEL_SAVE_PATH,
+    'modeling_info'     : {
+        'feature_size'  : len(MODELING_COLUMNS),
+        'epochs'        : 60,
+        'batch_size'    : 30,
+        'input_units'   : 100,
+        'middle_units'  : 100,
+        'output_units'  : 1,
+        'activation_fn' : 'relu',
+        'dropout'       : .1,
+        'loss'          : 'mean_squared_error',
+        'optimizer'     : tf.keras.optimizers.Adam(.0005),
+        'metrics'       : 'mse'
+    }
+}

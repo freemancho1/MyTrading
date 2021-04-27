@@ -35,6 +35,13 @@ kwargs = {
     }
 }
 
+def tensorflow_init():
+    gpu = tf.config.experimental.list_physical_devices('GPU')
+    try:
+        tf.config.experimental.set_memory_growth(gpu[0], True)
+    except RuntimeError as e:
+        log.error(e)
+
 def lstm_test():
     se = StartEndLogging()
 
@@ -42,7 +49,7 @@ def lstm_test():
     log.info(len(modeling_target_qs))
 
     cnt_skip_trend, cnt_skip_accuracy = 0, 0
-    for modeling_company in modeling_target_qs[:30]:
+    for modeling_company in modeling_target_qs[:15]:
         model = LstmTraining(modeling_company.com_code, kwargs)
         is_skip = model.modeling()
         se.mid(f'{modeling_company.com_code}')
@@ -58,4 +65,5 @@ def lstm_test():
 
 
 if __name__ == '__main__':
+    # tensorflow_init()
     lstm_test()
