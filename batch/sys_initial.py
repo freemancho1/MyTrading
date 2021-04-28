@@ -22,6 +22,7 @@ from trading.utils import DataConverter as dc
 from trading.utils import StartEndLogging
 from trading.crawler import KrxCrawler
 from stock.wrapper import CodeWrapper as scdw
+from stock.wrapper import AccountWrapper as saw
 from stock.wrapper import CompanyWrapper as scw
 from stock.wrapper import MarketDataWrapper as smdw
 from stock.wrapper import ModelingDataWrapper as smlw
@@ -38,6 +39,19 @@ def code_init():
         log.error(e)
         sys.exit()
     se.end(f'{len(code_df)} codes insert!')
+
+
+def account_init():
+    account_list = [
+        {'acc_name': 'B11', 't_type': 'B001', 't_count': 1, 'base_money': 5000000},
+        {'acc_name': 'B13', 't_type': 'B001', 't_count': 3, 'base_money': 5000000},
+        {'acc_name': 'B15', 't_type': 'B001', 't_count': 5, 'base_money': 5000000},
+        {'acc_name': 'B21', 't_type': 'B002', 't_count': 1, 'base_money': 5000000},
+        {'acc_name': 'B23', 't_type': 'B002', 't_count': 3, 'base_money': 5000000},
+        {'acc_name': 'B25', 't_type': 'B002', 't_count': 5, 'base_money': 5000000},
+    ]
+    saw.delete()
+    saw.insert(account_list)
 
 
 def start_krx_crawling():
@@ -118,6 +132,9 @@ def insert_modelingdata_from_market():
                     diff_ratio = market_data.t_volume / yesterday_data.t_volume
                     if diff_ratio > DAY_CHECK_MAX_RATIO or diff_ratio < DAY_CHECK_MIN_RATIO:
                         first_normal_data = market_data
+                    # 당일 거래량이 없는 종목은 감자/증자 대상으로 간주한다.
+                    if market_data.volume == 0:
+                        first_normal_data = market_data
                 yesterday_data = market_data
 
         normal_qs = company_market_qs.filter(date__gte=first_normal_data.date)
@@ -136,7 +153,8 @@ def insert_modelingdata_from_market():
 
 
 if __name__ == '__main__':
-    code_init()
+    # code_init()
+    account_init()
     # start_krx_crawling()
     # insert_marketdata_from_crawler()
     # insert_company_from_market()

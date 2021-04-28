@@ -90,6 +90,7 @@ class LstmTraining(object):
         self.model_info['accuracy'] = ml.accuracy_trend(test['yc'], pred_yc)
         self.model_info['p_close'] = float(pred_yc[-1] * self.etc_info['max_price'])
 
+
         if self.model_info['accuracy'] < .5:
             # log.debug(f'accuracy skip: {self.model_info["accuracy"]}')
             self.is_skip['accuracy'] = True
@@ -105,5 +106,25 @@ class LstmTraining(object):
             self.model_info['p_open'] = float(pred_yo[-1] * self.etc_info['max_price'])
             model_info = ml.cal_ratio(self.model_info)
             smiw.insert(model_info)
+
+        return self.is_skip
+
+    def modeling2(self):
+        try:
+            train, test = self.preprocessing()
+            model = self.training([train['x'], train['yc']], [test['x'], test['yc']])
+            model.load_weights(self.etc_info['model_file_name'])
+            pred_yc = model.predict(test['x'])
+            self.model_info['accuracy'] = ml.accuracy_trend(test['yc'], pred_yc)
+            self.model_info['p_close'] = float(pred_yc[-1] * self.etc_info['max_price'])
+            self.model_info['p_ratio'] = self.model_info['p_close'] / self.model_info['r_close']
+            if self.model_info['accuracy'] < .5:
+                self.is_skip['accuracy'] = True
+            elif self.model_info['p_close'] < self.model_info['r_close']:
+                self.is_skip['trend'] = True
+            else:
+                smiw.insert(self.model_info)
+        except Exception as e:
+            raise Exception(e)
 
         return self.is_skip

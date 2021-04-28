@@ -7,7 +7,6 @@ c_type,code,name,memo
 A,A001,KOSPI,
 A,A002,KOSDAQ,
 A,A003,KONEX,
-B,B001,Next Open vs Today Close,Next day predict open price vs today real close price
-B,B002,Next Close vs Today Close,Next day predict close price vs today real close price
-B,B003,Next Close vs Next Open,Next day predict close price vs next day predict open price
+B,B001,PRICE,Next day predict close price vs today real close price
+B,B002,ACCURACY,Trend accuracy
 

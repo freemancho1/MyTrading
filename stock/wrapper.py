@@ -247,9 +247,37 @@ class ModelingDataWrapper:
 class ModelingInfoWrapper:
 
     @staticmethod
+    def get_date(is_min=False, is_add_one=False):
+        try:
+            date = bw.get_date(ModelingInfo, is_min=is_min, is_add_one=is_add_one)
+        except Exception as e:
+            raise Exception(e)
+        return date
+
+
+    @staticmethod
     def gets(*args, **kwargs):
         try:
             data_qs = bw.gets(ModelingInfo, *args, **kwargs)
+        except Exception as e:
+            raise Exception(e)
+        return data_qs
+
+
+    @staticmethod
+    def gets_target_price(date):
+        try:
+            data_qs = bw.gets(ModelingInfo, '-p_ratio',
+                              date=date, r_open__gt=0., p_ratio__lte=1.5)
+        except Exception as e:
+            raise Exception(e)
+        return data_qs
+
+
+    @staticmethod
+    def gets_target_accuracy(date):
+        try:
+            data_qs = bw.gets(ModelingInfo, '-accuracy', date=date, r_open__gt=0.)
         except Exception as e:
             raise Exception(e)
         return data_qs
@@ -276,6 +304,39 @@ class ModelingInfoWrapper:
     def delete(**kwargs):
         try:
             bw.delete(ModelingInfo, **kwargs)
+        except Exception as e:
+            raise Exception(e)
+
+
+class MyTradingWrapper:
+
+    @staticmethod
+    def gets(*args, **kwargs):
+        try:
+            data_qs = bw.gets(MyTrading, *args, **kwargs)
+        except Exception as e:
+            raise Exception(e)
+        return data_qs
+
+    @staticmethod
+    def get(**kwargs):
+        try:
+            data = bw.get(MyTrading, **kwargs)
+        except Exception as e:
+            raise Exception(e)
+        return data
+
+    @staticmethod
+    def insert(datas):
+        try:
+            bw.insert(MyTrading, datas)
+        except Exception as e:
+            raise Exception(e)
+
+    @staticmethod
+    def delete(**kwargs):
+        try:
+            bw.delete(MyTrading, **kwargs)
         except Exception as e:
             raise Exception(e)
 

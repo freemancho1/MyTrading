@@ -185,7 +185,7 @@ class ModelingInfo(models.Model):
                f'com_code={self.com_code}, ' \
                f'real data=[open={self.r_open}, close={self.r_close}], ' \
                f'predict data=[open={self.p_open}, close={self.p_close}], ' \
-               f'ratio=[open={self.o_ratio}, close={self.o_close}, close/open={self.p_ratio}], ' \
+               f'ratio=[open={self.o_ratio}, close={self.c_ratio}, close/open={self.p_ratio}], ' \
                f'accuracy={self.accuracy})'
 
 
@@ -193,9 +193,9 @@ class MyTrading(models.Model):
 
     date        = models.DateField('Trading Date', null=False, db_index=True)
     com_code    = models.CharField('Company Code', max_length=7, null=False, db_index=True)
-    r_open      = models.FloatField('Real Today Open Price', null=True)
     t_type      = models.CharField('Trading Type', max_length=4, null=False)
     t_count     = models.IntegerField('Trading Count', null=False)
+    p_close     = models.FloatField('Predict Close Price', null=True)
     buy_price   = models.FloatField('Buy Price')
     sell_price  = models.FloatField('Sell Price')
     ratio       = models.FloatField('Ratio')

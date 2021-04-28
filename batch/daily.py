@@ -24,6 +24,7 @@ from stock.wrapper import CodeWrapper as scdw
 from stock.wrapper import CompanyWrapper as scw
 from stock.wrapper import MarketDataWrapper as smdw
 from stock.wrapper import ModelingDataWrapper as smlw
+from stock.wrapper import MyTradingWrapper as smyw
 from modeling.nn_training import LstmTraining
 
 
@@ -111,9 +112,9 @@ def today_modeling():
 
     cnt_processing = 0
     cnt_skip_trend, cnt_skip_accuracy = 0, 0
-    for modeling_company in modeling_target_qs[440:]:
+    for modeling_company in modeling_target_qs:
         model = LstmTraining(modeling_company.com_code, LSTM_KWARGS)
-        is_skip = model.modeling()
+        is_skip = model.modeling2()
         cnt_processing += 1
         se.mid(f'{modeling_company.com_code}, {cnt_processing}/{modeling_size}')
         if is_skip['trend']:
@@ -123,18 +124,53 @@ def today_modeling():
     log.info(f'modeling total count: {len(modeling_target_qs)}, '
              f'trend skip: {cnt_skip_trend}, accuracy skip: {cnt_skip_accuracy}')
 
-
     se.end()
+
+
+def today_trading():
+
+    def save_trading(t_type, data_qs):
+        try:
+            idx = 0
+            for data in data_qs[:TRADING_MAX_COUNT]:
+                trading_dt = {
+                    'date': data.date,
+                    'com_code': data.com_code,
+                    't_type': t_type,
+                    'p_close': data.p_close,
+                }
+                if idx < TRADING_MIN_COUNT:
+                    trading_dt['t_count'] = TRADING_MIN_COUNT
+                    smyw.insert(trading_dt)
+                if idx < TRADING_MID_COUNT:
+                    trading_dt['t_count'] = TRADING_MID_COUNT
+                    smyw.insert(trading_dt)
+                if idx < TRADING_MAX_COUNT:
+                    trading_dt['t_count'] = TRADING_MAX_COUNT
+                    smyw.insert(trading_dt)
+                idx += 1
+        except Exception as e:
+            raise Exception(e)
+
+    try:
+        target_date = smiw.get_date()
+        save_trading('B001', smiw.gets_target_accuracy(target_date))
+        save_trading('B002', smiw.gets_target_price(target_date))
+    except Exception as er:
+        raise Exception(er)
 
 
 if __name__ == '__main__':
     tse = StartEndLogging('daily processing')
 
-    # start_krx_crawling()
-    # update_marketdata_from_crawler()
-    # update_company_from_market()
-    # update_modelingdata_from_market()
-
-    today_modeling()
+    try:
+        start_krx_crawling()
+        update_marketdata_from_crawler()
+        update_company_from_market()
+        update_modelingdata_from_market()
+        today_modeling()
+        today_trading()
+    except Exception as err:
+        log.error(err)
 
     tse.end('daily processing')

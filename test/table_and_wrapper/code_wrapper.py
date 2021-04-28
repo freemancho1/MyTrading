@@ -72,7 +72,7 @@ def gets(*args, **kwargs):
         sys.exit()
 
 if __name__ == '__main__':
-    # code_init()
+    code_init()
     # insert()
     # update()
     # insert_err()
@@ -80,4 +80,4 @@ if __name__ == '__main__':
     # gets(c_type='A')
     # gets('-code', c_type='A')
     # gets('-id')
-    get()
+    # get()
