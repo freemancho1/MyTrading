@@ -19,7 +19,7 @@ from trading.utils import DataConverter as dc
 class CodeWrapper:
 
     @staticmethod
-    def get_type_list(c_type=SYSTEM_CODE_TYPE, is_name_index=False):
+    def get_type_dict(c_type=SYSTEM_CODE_TYPE, is_name_index=False):
         """
         코드 타입별로 리스트를 구함
         :param c_type: 추출할 코드 타입(기본값은 시스템 코드)
@@ -40,6 +40,22 @@ class CodeWrapper:
                 else:
                     datas[data.code] = data.name
             return datas
+
+
+    @staticmethod
+    def get_type_list(c_type=SYSTEM_CODE_TYPE, is_name=False):
+        try:
+            data_qs = bw.gets(Code, 'code', c_type=c_type)
+        except Exception as e:
+            raise Exception(e)
+        else:
+            lists = []
+            for data in data_qs:
+                if is_name:
+                    lists.append(data.name)
+                else:
+                    lists.append(data.code)
+            return lists
 
 
     @staticmethod
@@ -211,6 +227,15 @@ class ModelingDataWrapper:
 
 
     @staticmethod
+    def gets_trading_data(y_date, com_code):
+        try:
+            data = bw.gets(ModelingData, 'date', date__gt=y_date, com_code=com_code)[0]
+        except Exception as e:
+            raise Exception(e)
+        return data
+
+
+    @staticmethod
     def gets(*args, **kwargs):
         try:
             data_qs = bw.gets(ModelingData, *args, **kwargs)
@@ -311,6 +336,25 @@ class ModelingInfoWrapper:
 class MyTradingWrapper:
 
     @staticmethod
+    def get_date(is_min=False, is_add_one=False):
+        try:
+            date = bw.get_date(MyTrading, is_min=is_min, is_add_one=is_add_one)
+        except Exception as e:
+            raise Exception(e)
+        return date
+
+
+    @staticmethod
+    def gets_yesterday_data(date, t_type, t_count):
+        try:
+            data_qs = bw.gets(MyTrading, 'com_code',
+                              date=date, t_type=t_type, t_count=t_count)
+        except Exception as e:
+            raise Exception(e)
+        return data_qs
+
+
+    @staticmethod
     def gets(*args, **kwargs):
         try:
             data_qs = bw.gets(MyTrading, *args, **kwargs)
@@ -342,6 +386,15 @@ class MyTradingWrapper:
 
 
 class AccountWrapper:
+
+    @staticmethod
+    def get_trading_account(t_type, t_count):
+        try:
+            data = bw.get(Account, t_type=t_type, t_count=t_count)
+        except Exception as e:
+            raise Exception(e)
+        return data
+
 
     @staticmethod
     def gets(*args, **kwargs):

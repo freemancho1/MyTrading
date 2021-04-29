@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.db import models
+import numpy as np
 
 
 class Code(models.Model):
@@ -206,7 +207,7 @@ class MyTrading(models.Model):
         ordering = ['-date', 'com_code']
 
     def __init__(self,
-                 id, date, com_code, t_type, t_count,
+                 id, date, com_code, t_type, t_count, p_close=0.,
                  buy_price=0, sell_price=0, ratio=.0,
                  volume=0, profit=.0,
                  *args, **kwargs):
@@ -217,6 +218,7 @@ class MyTrading(models.Model):
         self.com_code   = com_code
         self.t_type     = t_type
         self.t_count    = t_count
+        self.p_close    = int(p_close)
         self.buy_price  = buy_price
         self.sell_price = sell_price
         self.ratio      = ratio
@@ -225,7 +227,7 @@ class MyTrading(models.Model):
 
     def __str__(self):
         return f'MyTrading(id={self.id}, date={self.date}, com_code={self.com_code}, ' \
-               f't_type/count=[{self.t_type}/{self.t_count}], ' \
+               f't_type/count=[{self.t_type}/{self.t_count}], p_close={self.p_close}, ' \
                f'price=[buy={self.buy_price}, sell={self.sell_price}], ' \
                f'ratio={self.ratio}, volume={self.volume}, profit={self.profit})'
 

@@ -42,14 +42,17 @@ def code_init():
 
 
 def account_init():
-    account_list = [
-        {'acc_name': 'B11', 't_type': 'B001', 't_count': 1, 'base_money': 5000000},
-        {'acc_name': 'B13', 't_type': 'B001', 't_count': 3, 'base_money': 5000000},
-        {'acc_name': 'B15', 't_type': 'B001', 't_count': 5, 'base_money': 5000000},
-        {'acc_name': 'B21', 't_type': 'B002', 't_count': 1, 'base_money': 5000000},
-        {'acc_name': 'B23', 't_type': 'B002', 't_count': 3, 'base_money': 5000000},
-        {'acc_name': 'B25', 't_type': 'B002', 't_count': 5, 'base_money': 5000000},
-    ]
+    t_type_qs = scdw.get_type_list(c_type='B')
+    account_list = []
+    for t_type in t_type_qs:
+        for cnt in TRADING_COUNT:
+            account = {
+                'acc_name'      : f'{t_type}{cnt}',
+                't_type'        : t_type,
+                't_count'       : cnt,
+                'base_money'    : TRADING_BASE_MONEY
+            }
+            account_list.append(account)
     saw.delete()
     saw.insert(account_list)
 
@@ -61,7 +64,7 @@ def start_krx_crawling():
 
 def insert_marketdata_from_crawler():
 
-    m_type_list = scdw.get_type_list('A', is_name_index=True)
+    m_type_dict = scdw.get_type_dict('A', is_name_index=True)
 
     def file_processing(csv_file_name):
         trading_df = pd.read_csv(os.path.join(CRAWLING_TARGET_PATH, csv_file_name),
@@ -71,7 +74,7 @@ def insert_marketdata_from_crawler():
         trading_df = trading_df.fillna(0)
         trading_df['date'] = parse(str(re.findall('\d{8}', csv_file_name)[0])).date()
         trading_df['m_type'] = trading_df['m_type']\
-            .apply(lambda m_type: m_type_list[str(m_type)])
+            .apply(lambda m_type: m_type_dict[str(m_type)])
         trading_df = trading_df.drop(['m_dept'], axis=1)
 
         smdw.insert(trading_df)

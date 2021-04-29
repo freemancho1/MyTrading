@@ -21,6 +21,7 @@ from trading.utils import Logger as log
 from trading.utils import StartEndLogging
 from trading.crawler import KrxCrawler
 from stock.wrapper import CodeWrapper as scdw
+from stock.wrapper import AccountWrapper as saw
 from stock.wrapper import CompanyWrapper as scw
 from stock.wrapper import MarketDataWrapper as smdw
 from stock.wrapper import ModelingDataWrapper as smlw
@@ -34,7 +35,7 @@ def start_krx_crawling():
 
 def update_marketdata_from_crawler():
 
-    m_type_list = scdw.get_type_list('A', is_name_index=True)
+    m_type_dict = scdw.get_type_dict('A', is_name_index=True)
 
     def file_processing(csv_file_name):
         trading_df = pd.read_csv(os.path.join(CRAWLING_TARGET_PATH, csv_file_name),
@@ -44,7 +45,7 @@ def update_marketdata_from_crawler():
         trading_df = trading_df.fillna(0)
         trading_df['date'] = parse(str(re.findall('\d{8}', csv_file_name)[0])).date()
         trading_df['m_type'] = trading_df['m_type']\
-            .apply(lambda m_type: m_type_list[str(m_type)])
+            .apply(lambda m_type: m_type_dict[str(m_type)])
         trading_df = trading_df.drop(['m_dept'], axis=1)
 
         smdw.insert(trading_df)
@@ -160,16 +161,54 @@ def today_trading():
         raise Exception(er)
 
 
+def yesterday_trading_result():
+
+    try:
+        t_type_qs = scdw.get_type_list(c_type='B')
+        y_date = smyw.get_date()
+        for t_type in t_type_qs:
+            for cnt in TRADING_COUNT:
+                y_trading_qs = smyw.gets_yesterday_data(y_date, t_type, cnt)
+                account = saw.get_trading_account(t_type, cnt)
+                base_money = account.base_money
+                base_money_for_cnt = int(base_money / cnt)
+                total_money = 0
+                for y_trading in y_trading_qs:
+                    modeling_data = smlw.gets_trading_data(y_date, y_trading.com_code)
+                    y_trading.buy_price = modeling_data.open
+                    y_trading.sell_price = modeling_data.close
+                    y_trading.ratio = modeling_data.close / modeling_data.open
+                    y_trading.volume = int(base_money_for_cnt / modeling_data.open)
+                    y_trading.profit = (y_trading.sell_price - y_trading.buy_price) \
+                                       * y_trading.volume
+
+                    buy_money = y_trading.buy_price * y_trading.volume
+                    diff_money = base_money_for_cnt - buy_money
+                    sell_money = y_trading.sell_price * y_trading.volume
+                    result_money = diff_money + sell_money
+                    total_money += result_money
+
+                    y_trading.save()
+
+                account.balance = total_money - TRADING_BASE_MONEY
+                account.ratio = total_money / TRADING_BASE_MONEY
+                account.base_money = total_money
+                account.save()
+    except Exception as e:
+        raise Exception(e)
+
+
 if __name__ == '__main__':
     tse = StartEndLogging('daily processing')
 
     try:
-        start_krx_crawling()
-        update_marketdata_from_crawler()
-        update_company_from_market()
-        update_modelingdata_from_market()
-        today_modeling()
-        today_trading()
+        # start_krx_crawling()
+        # update_marketdata_from_crawler()
+        # update_company_from_market()
+        # update_modelingdata_from_market()
+        yesterday_trading_result()
+        # today_modeling()
+        # today_trading()
     except Exception as err:
         log.error(err)
 
