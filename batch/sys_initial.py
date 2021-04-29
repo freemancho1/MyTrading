@@ -156,7 +156,7 @@ def insert_modelingdata_from_market():
 
 
 if __name__ == '__main__':
-    # code_init()
+    code_init()
     account_init()
     # start_krx_crawling()
     # insert_marketdata_from_crawler()
