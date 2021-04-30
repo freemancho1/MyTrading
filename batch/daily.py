@@ -25,6 +25,7 @@ from stock.wrapper import AccountWrapper as saw
 from stock.wrapper import CompanyWrapper as scw
 from stock.wrapper import MarketDataWrapper as smdw
 from stock.wrapper import ModelingDataWrapper as smlw
+from stock.wrapper import ModelingInfoWrapper as smiw
 from stock.wrapper import MyTradingWrapper as smyw
 from modeling.nn_training import LstmTraining
 
@@ -202,10 +203,10 @@ if __name__ == '__main__':
     tse = StartEndLogging('daily processing')
 
     try:
-        # start_krx_crawling()
-        # update_marketdata_from_crawler()
-        # update_company_from_market()
-        # update_modelingdata_from_market()
+        start_krx_crawling()
+        update_marketdata_from_crawler()
+        update_company_from_market()
+        update_modelingdata_from_market()
         yesterday_trading_result()
         # today_modeling()
         # today_trading()
