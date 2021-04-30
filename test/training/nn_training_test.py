@@ -14,26 +14,11 @@ from config.sysfiles.parameter import *
 from trading.utils import Logger as log
 from trading.utils import StartEndLogging
 from stock.wrapper import CompanyWrapper as scw
+from stock.wrapper import ModelInfoWrapper as smw
+from stock.wrapper import ModelingDataWrapper as smlw
 from modeling.nn_training import LstmTraining
+from modeling.nn_models import lstm
 
-kwargs = {
-    'window_size'       : MODELING_WINDOW_SIZE,
-    'test_ratio'        : 1. - TRAIN_DATA_RATIO,
-    'model_save_path'   : MODEL_SAVE_PATH,
-    'modeling_info'     : {
-        'feature_size'  : len(MODELING_COLUMNS),
-        'epochs'        : 60,
-        'batch_size'    : 30,
-        'input_units'   : 100,
-        'middle_units'  : 100,
-        'output_units'  : 1,
-        'activation_fn' : 'relu',
-        'dropout'       : .1,
-        'loss'          : 'mean_squared_error',
-        'optimizer'     : tf.keras.optimizers.Adam(.0005),
-        'metrics'       : 'mse'
-    }
-}
 
 def tensorflow_init():
     gpu = tf.config.experimental.list_physical_devices('GPU')
@@ -63,7 +48,44 @@ def lstm_test():
     se.end()
 
 
+def lstm_test3():
+    se = StartEndLogging()
+
+    modeling_target_qs = scw.gets_modeling_target()
+
+    for modeling_company in modeling_target_qs[:10]:
+        model = LstmTraining(modeling_company.com_code, LSTM_KWARGS)
+        model.modeling3()
+
+    se.end()
+
+
+def predict():
+
+    try:
+        model_info_qs = smw.get_models('LSTM', '2021-04-28')
+        for model_info in model_info_qs[:1]:
+            data_lst = smlw.get_prediction_datas(model_info.com_code, model_info.date,
+                                                 model_info.info['window_size'])
+            if data_lst is None:
+                continue
+            log.warning(f'data_lst type: {type(data_lst)}\n{data_lst}')
+            pred_data_lst = data_lst / model_info.max_value
+            model = lstm(model_info.info)
+            model.load_weights(model_info.model_path)
+            pred = model.predict(pred_data_lst)
+            log.warning(pred * model_info.max_value)
+
+
+    except Exception as e:
+        raise Exception(e)
+
+
 
 if __name__ == '__main__':
-    # tensorflow_init()
-    lstm_test()
+    try:
+        # tensorflow_init()
+        # lstm_test3()
+        predict()
+    except Exception as err:
+        log.error(err)

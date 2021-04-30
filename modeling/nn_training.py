@@ -11,6 +11,7 @@ from trading.utils import Logger as log
 from modeling.utils import Modeling as ml
 from modeling.nn_models import lstm
 from stock.wrapper import CompanyWrapper as scw
+from stock.wrapper import ModelInfoWrapper as smw
 from stock.wrapper import ModelingDataWrapper as smlw
 from stock.wrapper import ModelingInfoWrapper as smiw
 
@@ -63,7 +64,8 @@ class LstmTraining(object):
         early_stopping = EarlyStopping(monitor=monitor, patience=10)
 
         curr_model_save_path = os.path.join(self.kwargs['model_save_path'],
-                                            'LSTM', str(datetime.now().date()))
+                                            self.kwargs['model_name'],
+                                            str(datetime.now().date()))
         if not os.path.exists(curr_model_save_path):
             os.makedirs(curr_model_save_path, exist_ok=True)
         self.etc_info['model_file_name'] = \
@@ -128,3 +130,23 @@ class LstmTraining(object):
             raise Exception(e)
 
         return self.is_skip
+
+    def modeling3(self):
+        try:
+            train, test = self.preprocessing()
+            model = self.training([train['x'], train['yc']], [test['x'], test['yc']])
+            model.load_weights(self.etc_info['model_file_name'])
+            pred_yc = model.predict(test['x'])
+            log.debug(self.kwargs['modeling_info'])
+            model_info = {
+                'model_name'    : self.kwargs['model_name'],
+                'com_code'      : self.model_info['com_code'],
+                'date'          : self.model_info['date'],
+                'info'          : self.kwargs['modeling_info'],
+                'model_path'    : self.etc_info['model_file_name'],
+                'max_value'     : self.etc_info['max_price'],
+                'accuracy'      : ml.accuracy_trend(test['yc'], pred_yc)
+            }
+            smw.insert(model_info)
+        except Exception as e:
+            raise Exception(e)

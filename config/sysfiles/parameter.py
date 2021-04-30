@@ -105,6 +105,7 @@ class ByteSize(Enum):
 
 # Modeling Parameter
 LSTM_KWARGS = {
+    'model_name'        : 'LSTM',
     'window_size'       : MODELING_WINDOW_SIZE,
     'test_ratio'        : 1. - TRAIN_DATA_RATIO,
     'model_save_path'   : MODEL_SAVE_PATH,
@@ -118,7 +119,7 @@ LSTM_KWARGS = {
         'activation_fn' : 'relu',
         'dropout'       : .1,
         'loss'          : 'mean_squared_error',
-        'optimizer'     : tf.keras.optimizers.Adam(.0005),
+        'optimizer'     : 'adam',
         'metrics'       : 'mse'
     }
 }

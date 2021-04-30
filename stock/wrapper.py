@@ -9,7 +9,7 @@ from django_pandas.io import read_frame
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 
-from stock.models import Code, Company, MarketData, ModelingData, ModelingInfo, MyTrading, Account
+from stock.models import *
 from config.sysfiles.parameter import *
 from trading.wrapper import BaseWrapper as bw
 from trading.utils import Logger as log
@@ -236,6 +236,21 @@ class ModelingDataWrapper:
 
 
     @staticmethod
+    def get_prediction_datas(com_code, date, w_size):
+        try:
+            data_qs = bw.gets(ModelingData, '-date', com_code=com_code, date__lte=date)[:w_size]
+            if data_qs[0].date != date:
+                return None
+            data_lst = []
+            for data in reversed(data_qs):
+                new_lst = [data.open, data.low, data.high, data.close, data.volume]
+                data_lst.append(new_lst)
+        except Exception as e:
+            raise Exception(e)
+        return data_lst
+
+
+    @staticmethod
     def gets(*args, **kwargs):
         try:
             data_qs = bw.gets(ModelingData, *args, **kwargs)
@@ -265,6 +280,42 @@ class ModelingDataWrapper:
     def delete(**kwargs):
         try:
             bw.delete(ModelingData, **kwargs)
+        except Exception as e:
+            raise Exception(e)
+
+
+class ModelInfoWrapper:
+
+    @staticmethod
+    def get_model(model_name, com_code, date):
+        try:
+            data = bw.get(ModelInfo, model_name=model_name, com_code=com_code, date=date)
+        except Exception as e:
+            raise Exception(e)
+        return data
+
+
+    @staticmethod
+    def get_models(model_name, date):
+        try:
+            data_qs = bw.gets(ModelInfo, 'com_code', model_name=model_name, date=date)
+        except Exception as e:
+            raise Exception(e)
+        return data_qs
+
+
+    @staticmethod
+    def insert(datas):
+        try:
+            bw.insert(ModelInfo, datas)
+        except Exception as e:
+            raise Exception(e)
+
+
+    @staticmethod
+    def delete_all():
+        try:
+            bw.delete(ModelInfo)
         except Exception as e:
             raise Exception(e)
 

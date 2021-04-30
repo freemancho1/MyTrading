@@ -190,6 +190,42 @@ class ModelingInfo(models.Model):
                f'accuracy={self.accuracy})'
 
 
+class ModelInfo(models.Model):
+
+    model_name  = models.CharField('Model Name', max_length=100, null=False)
+    com_code    = models.CharField('Company Code', max_length=7, default='000000')
+    date        = models.DateField('Training Date', null=False, db_index=True)
+    info        = models.JSONField('Model Create Info', default={})
+    model_path  = models.CharField('Model File Path', max_length=300, null=False)
+    max_value   = models.FloatField('Max Value', null=True)
+    accuracy    = models.FloatField('Model Accuracy', null=True)
+
+    class Meta:
+        ordering = ['model_name', '-date']
+
+    def __init__(self,
+                 id, model_name, com_code, date, info, model_path,
+                 max_value=0., accuracy=0.,
+                 *args, **kwargs):
+        super(ModelInfo, self).__init__(*args, **kwargs)
+
+        self.id         = id
+        self.model_name = model_name
+        self.com_code   = com_code
+        self.date       = date
+        self.info       = info
+        self.model_path = model_path
+        self.max_value  = max_value
+        self.accuracy   = accuracy
+
+    def __str__(self):
+        return f'ModelInfo(id={self.id}, ' \
+               f'model_name={self.model_name}, com_code={self.com_code}, ' \
+               f'date={self.date}, info=[{self.info}], ' \
+               f'model_path={self.model_path}, ' \
+               f'max_value={self.max_value}, accuracy={self.accuracy})'
+
+
 class MyTrading(models.Model):
 
     date        = models.DateField('Trading Date', null=False, db_index=True)
